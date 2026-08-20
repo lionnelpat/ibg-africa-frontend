@@ -1,18 +1,26 @@
 import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
-import { Dashboard } from './app/pages/dashboard/dashboard';
-import { Etudiant } from './app/pages/etudiant/etudiant';
-import { Notfound } from './app/pages/notfound/notfound';
 
 export const appRoutes: Routes = [
     {
         path: '',
         component: AppLayout,
         children: [
-            { path: '', component: Dashboard },
-            { path: 'etudiant', component: Etudiant }
+            {
+                path: '',
+                title: 'Dashboard',
+                loadComponent: () => import('./app/pages/dashboard/dashboard').then((m) => m.Dashboard)
+            },
+            {
+                path: 'etudiant',
+                loadChildren: () => import('./app/features/etudiant/etudiant.routes').then((m) => m.ETUDIANT_ROUTES)
+            }
         ]
     },
-    { path: 'notfound', component: Notfound },
+    {
+        path: 'notfound',
+        title: 'Page introuvable',
+        loadComponent: () => import('./app/pages/notfound/notfound').then((m) => m.Notfound)
+    },
     { path: '**', redirectTo: '/notfound' }
 ];

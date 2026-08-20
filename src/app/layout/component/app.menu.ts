@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { NAVIGATION } from '@/app/core/navigation/navigation';
 
 @Component({
     selector: 'app-menu',
@@ -19,17 +20,5 @@ import { AppMenuitem } from './app.menuitem';
     </ul> `,
 })
 export class AppMenu {
-    model: MenuItem[] = [];
-
-    ngOnInit() {
-        this.model = [
-            {
-                label: 'Général',
-                items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    { label: 'Étudiant', icon: 'pi pi-fw pi-users', routerLink: ['/etudiant'] }
-                ]
-            }
-        ];
-    }
+    model: MenuItem[] = NAVIGATION;
 }
