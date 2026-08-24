@@ -63,6 +63,7 @@ function toIsoDate(value: Date | null): string | null {
             <p-toolbar styleClass="mb-4">
                 <ng-template #start>
                     <p-button label="Ajouter" icon="pi pi-plus" (onClick)="openNew()" />
+                    <p-button label="Générer les matricules manquants" icon="pi pi-hashtag" severity="secondary" outlined class="ml-2" (onClick)="genererMatricules()" />
                 </ng-template>
                 <ng-template #end>
                     <div class="flex flex-wrap gap-3">
@@ -335,6 +336,22 @@ export class EtudiantList implements OnInit {
                 this.notification.success('Élément supprimé.');
                 this.reload();
             });
+        });
+    }
+
+    genererMatricules(): void {
+        this.api.genererMatriculesManquants().subscribe((result) => {
+            if (result.genere > 0) {
+                this.notification.success(`${result.genere} matricule(s) généré(s).`);
+                this.reload();
+            } else {
+                this.notification.success('Aucun matricule à générer.');
+            }
+            if (result.ignoresSansAnneeEntree.length > 0) {
+                this.notification.error(
+                    `${result.ignoresSansAnneeEntree.length} étudiant(s) sans année d'entrée n'ont pas pu être traités : ${result.ignoresSansAnneeEntree.slice(0, 5).join(', ')}${result.ignoresSansAnneeEntree.length > 5 ? '…' : ''}`
+                );
+            }
         });
     }
 }

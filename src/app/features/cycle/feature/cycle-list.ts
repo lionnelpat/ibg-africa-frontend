@@ -84,6 +84,9 @@ function toIsoDate(value: Date | null): string | null {
                 [rowsPerPageOptions]="[10, 20, 50]"
                 dataKey="id"
                 [rowHover]="true"
+                styleClass="cursor-pointer"
+                sortField="annee"
+                [sortOrder]="-1"
                 currentPageReportTemplate="{first} à {last} sur {totalRecords}"
                 [showCurrentPageReport]="true"
             >
@@ -96,12 +99,11 @@ function toIsoDate(value: Date | null): string | null {
                     </tr>
                 </ng-template>
                 <ng-template #body let-row>
-                    <tr>
+                    <tr [routerLink]="['/cycle', row.id]">
                         <td>{{ row.annee }}</td>
                         <td>{{ row.libelle }}</td>
                         <td><p-tag [value]="row.cloture ? 'Oui' : 'Non'" [severity]="row.cloture ? 'success' : 'danger'" /></td>
-                        <td>
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" [routerLink]="['/cycle', row.id]" />
+                        <td (click)="$event.stopPropagation()">
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="remove(row)" />
                         </td>

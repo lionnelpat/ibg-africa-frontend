@@ -1,4 +1,5 @@
 export interface MatiereDispensee {
+    evaluationPrevueId: number;
     coursId: number;
     coursIntitule: string;
     matiereIntitule: string | null;

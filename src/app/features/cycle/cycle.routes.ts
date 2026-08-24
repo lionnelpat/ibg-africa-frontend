@@ -10,5 +10,10 @@ export const CYCLE_ROUTES: Routes = [
         path: ':id',
         title: 'Détail du cycle',
         loadComponent: () => import('./feature/cycle-detail').then((m) => m.CycleDetail)
+    },
+    {
+        path: ':id/matiere/:evaluationPrevueId',
+        title: 'Saisie des notes',
+        loadComponent: () => import('./feature/saisie-notes').then((m) => m.SaisieNotes)
     }
 ];
