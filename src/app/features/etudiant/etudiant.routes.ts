@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const ETUDIANT_ROUTES: Routes = [
     {
         path: '',
-        title: 'Étudiants',
-        loadComponent: () => import('./feature/etudiant').then((m) => m.Etudiant)
+        title: 'Etudiant',
+        loadComponent: () => import('./feature/etudiant-list').then((m) => m.EtudiantList)
     }
 ];

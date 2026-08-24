@@ -1,10 +1,12 @@
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
+import { errorInterceptor } from './app/core/http/error.interceptor';
 
 /**
  * Palette de marque GestResu (bleu), appliquée par défaut à l'ensemble
@@ -61,8 +63,14 @@ const GestResuPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
-        provideHttpClient(withFetch()),
+        provideHttpClient(
+            withFetch(),
+            withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
+            withInterceptors([errorInterceptor])
+        ),
         provideZonelessChangeDetection(),
-        providePrimeNG({ theme: { preset: GestResuPreset, options: { darkModeSelector: '.app-dark' } } })
+        providePrimeNG({ theme: { preset: GestResuPreset, options: { darkModeSelector: '.app-dark' } } }),
+        MessageService,
+        ConfirmationService
     ]
 };

@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
+import { AccountService } from '@/app/core/auth/account.service';
 import { LayoutService } from '@/app/layout/service/layout.service';
 
 @Component({
@@ -38,7 +39,7 @@ import { LayoutService } from '@/app/layout/service/layout.service';
         </div>
 
         <div class="layout-topbar-actions">
-            <button type="button" class="layout-topbar-action" (click)="userMenu.toggle($event)">
+            <button type="button" class="layout-topbar-action" [title]="accountService.account()?.login ?? ''" (click)="userMenu.toggle($event)">
                 <p-avatar icon="pi pi-user" shape="circle" />
             </button>
             <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
@@ -47,10 +48,11 @@ import { LayoutService } from '@/app/layout/service/layout.service';
 })
 export class AppTopbar {
     layoutService = inject(LayoutService);
+    accountService = inject(AccountService);
 
     userMenuItems: MenuItem[] = [
-        { label: 'Profile', icon: 'pi pi-user' },
+        { label: 'Profil', icon: 'pi pi-user', disabled: true },
         { separator: true },
-        { label: 'Logout', icon: 'pi pi-sign-out' }
+        { label: 'Déconnexion', icon: 'pi pi-sign-out', command: () => this.accountService.logout() }
     ];
 }
