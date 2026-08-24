@@ -37,6 +37,16 @@ const STATUT_OPTIONS: { label: string; value: StatutNote }[] = [
                 </div>
             </p-card>
 
+            <p-card header="Saisie en masse (Excel)">
+                <p class="text-muted-color mt-0 mb-4">
+                    Fichier .xlsx avec deux colonnes : matricule (colonne A) et note (colonne B), une ligne d'en-tête suivie d'une ligne par étudiant.
+                </p>
+                <div class="flex items-center gap-3">
+                    <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
+                    <p-button label="Importer un fichier Excel" icon="pi pi-upload" severity="secondary" outlined [loading]="importing()" (onClick)="fileInput.click()" />
+                </div>
+            </p-card>
+
             <p-card>
                 <p-table [value]="rows.controls" dataKey="etudiantId">
                     <ng-template #header>
@@ -87,19 +97,24 @@ export class SaisieNotes {
 
     matiere = signal<SaisieMatiere | null>(null);
     statutOptions = STATUT_OPTIONS;
+    importing = signal(false);
 
     rows = this.fb.array<ReturnType<typeof this.buildRow>>([]);
 
     constructor() {
         effect(() => {
             const id = Number(this.evaluationPrevueId());
-            this.api.getGrille(id).subscribe((matiere) => {
-                this.matiere.set(matiere);
-                this.rows.clear();
-                for (const ligne of matiere.lignes) {
-                    this.rows.push(this.buildRow(ligne));
-                }
-            });
+            this.chargerGrille(id);
+        });
+    }
+
+    private chargerGrille(id: number): void {
+        this.api.getGrille(id).subscribe((matiere) => {
+            this.matiere.set(matiere);
+            this.rows.clear();
+            for (const ligne of matiere.lignes) {
+                this.rows.push(this.buildRow(ligne));
+            }
         });
     }
 
@@ -125,6 +140,31 @@ export class SaisieNotes {
             this.notification.success(`${result.enregistrees} note(s) enregistrée(s).`);
             if (result.erreurs.length > 0) {
                 this.notification.error(result.erreurs.slice(0, 5).join(', '));
+            }
+        });
+    }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const fichier = input.files?.[0];
+        if (!fichier) {
+            return;
+        }
+        const id = Number(this.evaluationPrevueId());
+        this.importing.set(true);
+        this.api.importer(id, fichier).subscribe({
+            next: (result) => {
+                this.importing.set(false);
+                input.value = '';
+                this.notification.success(`${result.enregistrees} note(s) importée(s).`);
+                if (result.erreurs.length > 0) {
+                    this.notification.error(result.erreurs.slice(0, 8).join(' | '));
+                }
+                this.chargerGrille(id);
+            },
+            error: () => {
+                this.importing.set(false);
+                input.value = '';
             }
         });
     }

@@ -14,4 +14,10 @@ export class SaisieApi {
     enregistrer(evaluationPrevueId: number, lignes: SaisieNoteRequest[]): Observable<SaisieResult> {
         return this.http.put<SaisieResult>(`/api/evaluation-prevues/${evaluationPrevueId}/saisie`, lignes);
     }
+
+    importer(evaluationPrevueId: number, fichier: File): Observable<SaisieResult> {
+        const formData = new FormData();
+        formData.append('fichier', fichier);
+        return this.http.post<SaisieResult>(`/api/evaluation-prevues/${evaluationPrevueId}/saisie/import`, formData);
+    }
 }
