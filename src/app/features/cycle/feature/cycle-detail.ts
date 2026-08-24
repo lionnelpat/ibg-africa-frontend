@@ -110,7 +110,7 @@ interface EtudiantSuggestion extends Etudiant {
             </p-card>
         </div>
 
-        <p-dialog [(visible)]="addDialogVisible" [style]="{ width: '480px', height: '600px' }" header="Ajouter un étudiant au cycle" [modal]="true">
+        <p-dialog [(visible)]="addDialogVisible" [style]="{ width: '480px' }" header="Ajouter un étudiant au cycle" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-4 pt-2">
                     <div>
