@@ -85,6 +85,7 @@ function toIsoDate(value: Date | null): string | null {
                     <tr>
                         <th pSortableColumn="libelleLong">Libellé long<p-sortIcon field="libelleLong" /></th>
                         <th pSortableColumn="libelleCourt">Libellé court<p-sortIcon field="libelleCourt" /></th>
+                        <th pSortableColumn="bornes">Bornes</th>
                         <th pSortableColumn="ordreAffichage">Ordre d'affichage<p-sortIcon field="ordreAffichage" /></th>
                         <th pSortableColumn="actif">Actif<p-sortIcon field="actif" /></th>
                         <th style="width: 8rem"></th>
@@ -94,6 +95,7 @@ function toIsoDate(value: Date | null): string | null {
                     <tr>
                         <td>{{ row.libelleLong }}</td>
                         <td>{{ row.libelleCourt }}</td>
+                        <td>[ {{ row.borneMin }} - {{ row.borneMax }}]</td>
                         <td>{{ row.ordreAffichage }}</td>
                         <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
                         <td>
