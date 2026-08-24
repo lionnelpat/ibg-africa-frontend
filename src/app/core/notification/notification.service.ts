@@ -24,4 +24,15 @@ export class NotificationService {
             accept: onAccept
         });
     }
+
+    confirm(message: string, acceptLabel: string, onAccept: () => void): void {
+        this.confirmationService.confirm({
+            message,
+            header: 'Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            acceptButtonProps: { label: acceptLabel },
+            rejectButtonProps: { label: 'Annuler', severity: 'secondary', outlined: true },
+            accept: onAccept
+        });
+    }
 }

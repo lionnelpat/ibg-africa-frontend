@@ -11,4 +11,8 @@ export class InscriptionCycleApi {
     create(inscription: NewInscriptionCycle): Observable<unknown> {
         return this.http.post(this.resourceUrl, inscription);
     }
+
+    delete(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.resourceUrl}/${id}`);
+    }
 }

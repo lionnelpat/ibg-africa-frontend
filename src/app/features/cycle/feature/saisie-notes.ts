@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { NotificationService } from '@/app/core/notification/notification.service';
 import { SaisieLigne, SaisieMatiere, StatutNote } from '../domain/saisie.model';
 import { SaisieApi } from '../data-access/saisie.api';
@@ -22,7 +23,7 @@ const STATUT_OPTIONS: { label: string; value: StatutNote }[] = [
 @Component({
     selector: 'app-saisie-notes',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, RouterModule, ReactiveFormsModule, ButtonModule, CardModule, InputNumberModule, SelectModule, TableModule],
+    imports: [CommonModule, RouterModule, ReactiveFormsModule, ButtonModule, CardModule, InputNumberModule, SelectModule, TableModule, TagModule],
     template: `
         <div class="flex flex-col gap-4">
             <p-card>
@@ -33,19 +34,35 @@ const STATUT_OPTIONS: { label: string; value: StatutNote }[] = [
                             {{ matiere()?.coursIntitule }} — Cycle {{ matiere()?.cycleAnnee }} — Coefficient {{ matiere()?.coefficient }} — Note sur {{ matiere()?.noteMaximale }}
                         </div>
                     </div>
-                    <p-button label="Retour au cycle" icon="pi pi-arrow-left" text [routerLink]="['/cycle', matiere()?.cycleId]" />
+                    <div class="flex items-center gap-3">
+                        @if (matiere()?.cycleCloture) {
+                            <p-tag value="Cycle clôturé — lecture seule" severity="warn" />
+                        }
+                        <p-button label="Retour au cycle" icon="pi pi-arrow-left" text [routerLink]="['/cycle', matiere()?.cycleId]" />
+                    </div>
                 </div>
             </p-card>
 
-            <p-card header="Saisie en masse (Excel)">
-                <p class="text-muted-color mt-0 mb-4">
-                    Fichier .xlsx avec deux colonnes : matricule (colonne A) et note (colonne B), une ligne d'en-tête suivie d'une ligne par étudiant.
-                </p>
-                <div class="flex items-center gap-3">
-                    <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
-                    <p-button label="Importer un fichier Excel" icon="pi pi-upload" severity="secondary" outlined [loading]="importing()" (onClick)="fileInput.click()" />
-                </div>
-            </p-card>
+            @if (!matiere()?.cycleCloture) {
+                <p-card header="Saisie en masse (Excel)">
+                    <p class="text-muted-color mt-0 mb-4">
+                        Fichier .xlsx avec trois colonnes : matricule (colonne A), nom prénom (colonne B) et note (colonne C), une ligne d'en-tête suivie d'une
+                        ligne par étudiant. Téléchargez le modèle pré-rempli avec la liste des inscrits, à faire compléter par l'enseignant.
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
+                        <p-button
+                            label="Télécharger le modèle"
+                            icon="pi pi-download"
+                            severity="secondary"
+                            outlined
+                            [loading]="telechargementModele()"
+                            (onClick)="telechargerModele()"
+                        />
+                        <p-button label="Importer un fichier Excel" icon="pi pi-upload" severity="secondary" outlined [loading]="importing()" (onClick)="fileInput.click()" />
+                    </div>
+                </p-card>
+            }
 
             <p-card>
                 <p-table [value]="rows.controls" dataKey="etudiantId">
@@ -81,9 +98,11 @@ const STATUT_OPTIONS: { label: string; value: StatutNote }[] = [
                         </tr>
                     </ng-template>
                 </p-table>
-                <div class="flex justify-end mt-4">
-                    <p-button label="Enregistrer" icon="pi pi-check" (onClick)="enregistrer()" />
-                </div>
+                @if (!matiere()?.cycleCloture) {
+                    <div class="flex justify-end mt-4">
+                        <p-button label="Enregistrer" icon="pi pi-check" (onClick)="enregistrer()" />
+                    </div>
+                }
             </p-card>
         </div>
     `
@@ -98,6 +117,7 @@ export class SaisieNotes {
     matiere = signal<SaisieMatiere | null>(null);
     statutOptions = STATUT_OPTIONS;
     importing = signal(false);
+    telechargementModele = signal(false);
 
     rows = this.fb.array<ReturnType<typeof this.buildRow>>([]);
 
@@ -113,13 +133,13 @@ export class SaisieNotes {
             this.matiere.set(matiere);
             this.rows.clear();
             for (const ligne of matiere.lignes) {
-                this.rows.push(this.buildRow(ligne));
+                this.rows.push(this.buildRow(ligne, matiere.cycleCloture));
             }
         });
     }
 
-    private buildRow(ligne: SaisieLigne) {
-        return this.fb.group({
+    private buildRow(ligne: SaisieLigne, lectureSeule: boolean) {
+        const group = this.fb.group({
             etudiantId: this.fb.control(ligne.etudiantId),
             matricule: this.fb.control(ligne.matricule),
             nom: this.fb.control(ligne.nom),
@@ -127,6 +147,11 @@ export class SaisieNotes {
             note: this.fb.control<number | null>(ligne.note),
             statut: this.fb.control<StatutNote>(ligne.statut)
         });
+        if (lectureSeule) {
+            group.controls.note.disable();
+            group.controls.statut.disable();
+        }
+        return group;
     }
 
     enregistrer(): void {
@@ -166,6 +191,25 @@ export class SaisieNotes {
                 this.importing.set(false);
                 input.value = '';
             }
+        });
+    }
+
+    telechargerModele(): void {
+        const id = Number(this.evaluationPrevueId());
+        const m = this.matiere();
+        const nomFichier = m ? `modele-notes-${m.cycleAnnee}-${m.intitule}.xlsx`.replace(/[^\w.-]+/g, '_') : `modele-notes-${id}.xlsx`;
+        this.telechargementModele.set(true);
+        this.api.getTemplate(id).subscribe({
+            next: (blob) => {
+                this.telechargementModele.set(false);
+                const url = window.URL.createObjectURL(blob);
+                const lien = document.createElement('a');
+                lien.href = url;
+                lien.download = nomFichier;
+                lien.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: () => this.telechargementModele.set(false)
         });
     }
 }

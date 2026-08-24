@@ -20,4 +20,8 @@ export class SaisieApi {
         formData.append('fichier', fichier);
         return this.http.post<SaisieResult>(`/api/evaluation-prevues/${evaluationPrevueId}/saisie/import`, formData);
     }
+
+    getTemplate(evaluationPrevueId: number): Observable<Blob> {
+        return this.http.get(`/api/evaluation-prevues/${evaluationPrevueId}/saisie/template`, { responseType: 'blob' });
+    }
 }

@@ -11,6 +11,7 @@ export interface MatiereDispensee {
 
 export interface EtudiantResume {
     id: number;
+    inscriptionCycleId: number;
     matricule: string | null;
     nom: string;
     prenom: string;

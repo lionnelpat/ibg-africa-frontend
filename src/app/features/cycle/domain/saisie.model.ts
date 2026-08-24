@@ -18,6 +18,7 @@ export interface SaisieMatiere {
     noteMaximale: number;
     cycleId: number;
     cycleAnnee: number;
+    cycleCloture: boolean;
     lignes: SaisieLigne[];
 }
 

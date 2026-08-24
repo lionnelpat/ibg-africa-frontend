@@ -124,10 +124,6 @@ function toIsoDate(value: Date | null): string | null {
             <ng-template #content>
                 <form [formGroup]="form" class="grid grid-cols-12 gap-4 pt-2">
                     <div class="field col-span-12 md:col-span-6">
-                        <label for="matricule" class="block font-medium mb-2">Matricule </label>
-                        <input pInputText id="matricule" [formControl]="form.controls.matricule" fluid />
-                    </div>
-                    <div class="field col-span-12 md:col-span-6">
                         <label for="nom" class="block font-medium mb-2">Nom <span class="text-red-500">*</span></label>
                         <input pInputText id="nom" [formControl]="form.controls.nom" fluid />
                     </div>
@@ -136,12 +132,12 @@ function toIsoDate(value: Date | null): string | null {
                         <input pInputText id="prenom" [formControl]="form.controls.prenom" fluid />
                     </div>
                     <div class="field col-span-12 md:col-span-6">
-                        <label for="particularite" class="block font-medium mb-2">Particularité </label>
-                        <input pInputText id="particularite" [formControl]="form.controls.particularite" fluid />
-                    </div>
-                    <div class="field col-span-12 md:col-span-6">
                         <label for="dateNaissance" class="block font-medium mb-2">Date de naissance</label>
                         <p-datepicker inputId="dateNaissance" [formControl]="form.controls.dateNaissance" dateFormat="dd/mm/yy" [showIcon]="true" showButtonBar="true" fluid />
+                    </div>
+                    <div class="field col-span-12 md:col-span-6">
+                        <label for="anneeEntree" class="block font-medium mb-2">Année d'entrée (1re inscription) </label>
+                        <p-inputnumber inputId="anneeEntree" [formControl]="form.controls.anneeEntree" [useGrouping]="false" fluid />
                     </div>
                     <div class="field col-span-12 md:col-span-6">
                         <label for="email" class="block font-medium mb-2">Email </label>
@@ -151,29 +147,37 @@ function toIsoDate(value: Date | null): string | null {
                         <label for="telephone" class="block font-medium mb-2">Téléphone </label>
                         <input pInputText id="telephone" [formControl]="form.controls.telephone" fluid />
                     </div>
-                    <div class="field col-span-12 md:col-span-6">
-                        <label for="anneeEntree" class="block font-medium mb-2">Année d'entrée </label>
-                        <p-inputnumber inputId="anneeEntree" [formControl]="form.controls.anneeEntree" [useGrouping]="false" fluid />
-                    </div>
-                    <div class="field col-span-12 md:col-span-6 flex items-center gap-2 pt-6">
-                        <p-checkbox inputId="cursusAcheve" [formControl]="form.controls.cursusAcheve" [binary]="true" />
-                        <label for="cursusAcheve" class="font-medium">Cursus achevé</label>
-                    </div>
-                    <div class="field col-span-12 md:col-span-6">
-                        <label for="anneeFinale" class="block font-medium mb-2">Année finale </label>
-                        <p-inputnumber inputId="anneeFinale" [formControl]="form.controls.anneeFinale" [useGrouping]="false" fluid />
-                    </div>
                     <div class="field col-span-12">
-                        <label for="commentaire" class="block font-medium mb-2">Commentaire</label>
-                        <textarea pTextarea id="commentaire" [formControl]="form.controls.commentaire" rows="3" fluid></textarea>
-                    </div>
-                    <div class="field col-span-12 md:col-span-6 flex items-center gap-2 pt-6">
-                        <p-checkbox inputId="actif" [formControl]="form.controls.actif" [binary]="true" />
-                        <label for="actif" class="font-medium">Actif</label>
-                    </div>
-                    <div class="field col-span-12 md:col-span-6">
                         <label for="pays" class="block font-medium mb-2">Pays </label>
                         <p-select inputId="pays" [formControl]="form.controls.pays" [options]="paysOptions()" optionLabel="nom" dataKey="id" [showClear]="true" placeholder="Sélectionner" fluid />
+                    </div>
+
+                    @if (editingId !== null) {
+                        <div class="field col-span-12 md:col-span-6">
+                            <label for="matricule" class="block font-medium mb-2">Matricule </label>
+                            <input pInputText id="matricule" [formControl]="form.controls.matricule" fluid />
+                        </div>
+                        <div class="field col-span-12 md:col-span-6">
+                            <label for="particularite" class="block font-medium mb-2">Particularité </label>
+                            <input pInputText id="particularite" [formControl]="form.controls.particularite" fluid />
+                        </div>
+                        <div class="field col-span-12 md:col-span-4 flex items-center gap-2 pt-6">
+                            <p-checkbox inputId="cursusAcheve" [formControl]="form.controls.cursusAcheve" [binary]="true" />
+                            <label for="cursusAcheve" class="font-medium">Cursus achevé</label>
+                        </div>
+                        <div class="field col-span-12 md:col-span-4">
+                            <label for="anneeFinale" class="block font-medium mb-2">Année finale </label>
+                            <p-inputnumber inputId="anneeFinale" [formControl]="form.controls.anneeFinale" [useGrouping]="false" fluid />
+                        </div>
+                        <div class="field col-span-12 md:col-span-4 flex items-center gap-2 pt-6">
+                            <p-checkbox inputId="actif" [formControl]="form.controls.actif" [binary]="true" />
+                            <label for="actif" class="font-medium">Actif</label>
+                        </div>
+                    }
+
+                    <div class="field col-span-12">
+                        <label for="commentaire" class="block font-medium mb-2">Commentaire</label>
+                        <textarea pTextarea id="commentaire" [formControl]="form.controls.commentaire" rows="2" fluid></textarea>
                     </div>
                 </form>
             </ng-template>

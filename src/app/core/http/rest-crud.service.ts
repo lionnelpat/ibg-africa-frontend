@@ -52,6 +52,10 @@ export abstract class RestCrudService<T extends { id: number }> {
         return this.http.put<T>(`${this.resourceUrl}/${entity.id}`, entity);
     }
 
+    partialUpdate(changes: Partial<T> & { id: number }): Observable<T> {
+        return this.http.patch<T>(`${this.resourceUrl}/${changes.id}`, changes);
+    }
+
     delete(id: number): Observable<void> {
         return this.http.delete<void>(`${this.resourceUrl}/${id}`);
     }

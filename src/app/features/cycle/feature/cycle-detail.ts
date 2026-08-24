@@ -11,9 +11,14 @@ import { TagModule } from 'primeng/tag';
 import { NotificationService } from '@/app/core/notification/notification.service';
 import { Etudiant } from '@/app/features/etudiant/domain/etudiant.model';
 import { EtudiantApi } from '@/app/features/etudiant/data-access/etudiant.api';
-import { CycleDetail as CycleDetailModel } from '../domain/cycle-detail.model';
+import { CycleDetail as CycleDetailModel, EtudiantResume } from '../domain/cycle-detail.model';
 import { CycleDetailApi } from '../data-access/cycle-detail.api';
 import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
+import { CycleApi } from '../data-access/cycle.api';
+
+interface EtudiantSuggestion extends Etudiant {
+    nomAffiche: string;
+}
 
 @Component({
     selector: 'app-cycle-detail',
@@ -29,7 +34,12 @@ import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
                             {{ detail()?.centreNom }} ({{ detail()?.centreCode }}) — {{ detail()?.paysNom }}
                         </div>
                     </div>
-                    <p-tag [value]="detail()?.cloture ? 'Clôturé' : 'En cours'" [severity]="detail()?.cloture ? 'success' : 'info'" />
+                    <div class="flex items-center gap-3">
+                        <p-tag [value]="detail()?.cloture ? 'Clôturé' : 'En cours'" [severity]="detail()?.cloture ? 'success' : 'info'" />
+                        @if (!detail()?.cloture) {
+                            <p-button label="Clôturer le cycle" icon="pi pi-lock" severity="danger" outlined size="small" (onClick)="cloturerCycle()" />
+                        }
+                    </div>
                 </div>
             </p-card>
 
@@ -74,7 +84,7 @@ import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
                             <th>Nom</th>
                             <th>Prénom</th>
                             <th>Actif</th>
-                            <th style="width: 10rem"></th>
+                            <th style="width: 14rem"></th>
                         </tr>
                     </ng-template>
                     <ng-template #body let-row>
@@ -85,6 +95,9 @@ import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
                             <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
                             <td>
                                 <p-button label="Bulletin" icon="pi pi-file-pdf" size="small" [text]="true" [routerLink]="['/etudiant', row.id, 'bulletin']" />
+                                @if (!detail()?.cloture) {
+                                    <p-button icon="pi pi-user-minus" severity="danger" size="small" [text]="true" (onClick)="retirer(row)" />
+                                }
                             </td>
                         </tr>
                     </ng-template>
@@ -97,7 +110,7 @@ import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
             </p-card>
         </div>
 
-        <p-dialog [(visible)]="addDialogVisible" [style]="{ width: '480px' }" header="Ajouter un étudiant au cycle" [modal]="true">
+        <p-dialog [(visible)]="addDialogVisible" [style]="{ width: '480px', height: '600px' }" header="Ajouter un étudiant au cycle" [modal]="true">
             <ng-template #content>
                 <div class="flex flex-col gap-4 pt-2">
                     <div>
@@ -107,7 +120,7 @@ import { InscriptionCycleApi } from '../data-access/inscription-cycle.api';
                             [formControl]="form.controls.etudiant"
                             [suggestions]="suggestions()"
                             (completeMethod)="search($event)"
-                            field="nom"
+                            optionLabel="nomAffiche"
                             [dropdown]="false"
                             fluid
                             placeholder="Rechercher par nom..."
@@ -133,24 +146,29 @@ export class CycleDetail {
     private readonly api = inject(CycleDetailApi);
     private readonly etudiantApi = inject(EtudiantApi);
     private readonly inscriptionCycleApi = inject(InscriptionCycleApi);
+    private readonly cycleApi = inject(CycleApi);
     private readonly notification = inject(NotificationService);
     private readonly fb = inject(NonNullableFormBuilder);
 
     id = input.required<string>();
 
     detail = signal<CycleDetailModel | null>(null);
-    suggestions = signal<Etudiant[]>([]);
+    suggestions = signal<EtudiantSuggestion[]>([]);
     addDialogVisible = signal(false);
 
     form = this.fb.group({
-        etudiant: this.fb.control<Etudiant | null>(null, { validators: [Validators.required] })
+        etudiant: this.fb.control<EtudiantSuggestion | null>(null, { validators: [Validators.required] })
     });
 
     constructor() {
         effect(() => {
             this.detail.set(null);
-            this.api.get(Number(this.id())).subscribe((detail) => this.detail.set(detail));
+            this.reload();
         });
+    }
+
+    private reload(): void {
+        this.api.get(Number(this.id())).subscribe((detail) => this.detail.set(detail));
     }
 
     dejaInscrit(): boolean {
@@ -168,7 +186,14 @@ export class CycleDetail {
     }
 
     search(event: AutoCompleteCompleteEvent): void {
-        this.etudiantApi.query({ 'nom.contains': event.query, size: 20 }).subscribe((page) => this.suggestions.set(page.content));
+        this.etudiantApi.query({ 'nom.contains': event.query, size: 20 }).subscribe((page) =>
+            this.suggestions.set(
+                page.content.map((etudiant) => ({
+                    ...etudiant,
+                    nomAffiche: `${etudiant.nom} ${etudiant.prenom}${etudiant.matricule ? ' — ' + etudiant.matricule : ''}`
+                }))
+            )
+        );
     }
 
     confirmAdd(): void {
@@ -188,7 +213,26 @@ export class CycleDetail {
             .subscribe(() => {
                 this.notification.success('Étudiant inscrit.');
                 this.addDialogVisible.set(false);
-                this.api.get(cycleId).subscribe((detail) => this.detail.set(detail));
+                this.reload();
             });
+    }
+
+    retirer(row: EtudiantResume): void {
+        this.notification.confirmDelete(`Retirer ${row.nom} ${row.prenom} de ce cycle ?`, () => {
+            this.inscriptionCycleApi.delete(row.inscriptionCycleId).subscribe(() => {
+                this.notification.success('Étudiant retiré du cycle.');
+                this.reload();
+            });
+        });
+    }
+
+    cloturerCycle(): void {
+        const cycleId = Number(this.id());
+        this.notification.confirm('Clôturer ce cycle ? Les notes ne pourront plus être modifiées ni saisies en masse.', 'Clôturer', () => {
+            this.cycleApi.partialUpdate({ id: cycleId, cloture: true }).subscribe(() => {
+                this.notification.success('Cycle clôturé.');
+                this.reload();
+            });
+        });
     }
 }
