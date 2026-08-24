@@ -2,3 +2,23 @@
 @use 'primeicons/primeicons.css';
 @use '@/assets/layout/layout.scss';
 @use '@/assets/demo/demo.scss';
+
+/* Impression : le contenu routé (ex. bulletin étudiant) gère son propre
+   rendu papier via .screen-only / .bulletin-print — seul le chrome de
+   l'appli (topbar, sidebar, footer, toasts) doit disparaître ici. */
+@media print {
+    .layout-topbar,
+    .layout-sidebar,
+    .layout-footer,
+    .layout-mask,
+    .p-toast,
+    .p-confirmdialog {
+        display: none !important;
+    }
+
+    .layout-main-container,
+    .layout-main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}

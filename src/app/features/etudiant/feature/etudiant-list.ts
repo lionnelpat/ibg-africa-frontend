@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, viewChild, 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -41,6 +42,7 @@ function toIsoDate(value: Date | null): string | null {
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         ButtonModule,
         CardModule,
         CheckboxModule,
@@ -103,6 +105,7 @@ function toIsoDate(value: Date | null): string | null {
                         <td>{{ row.prenom }}</td>
                         <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
                         <td>
+                            <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" [routerLink]="['/etudiant', row.id, 'bulletin']" />
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="remove(row)" />
                         </td>

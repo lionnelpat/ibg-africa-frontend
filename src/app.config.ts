@@ -1,12 +1,16 @@
+import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
-import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
+import localeFr from '@angular/common/locales/fr';
+import { ApplicationConfig, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter, withComponentInputBinding, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
 import { errorInterceptor } from './app/core/http/error.interceptor';
+
+registerLocaleData(localeFr);
 
 /**
  * Palette de marque GestResu (bleu), appliquée par défaut à l'ensemble
@@ -62,7 +66,12 @@ const GestResuPreset = definePreset(Aura, {
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
+        provideRouter(
+            appRoutes,
+            withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
+            withEnabledBlockingInitialNavigation(),
+            withComponentInputBinding()
+        ),
         provideHttpClient(
             withFetch(),
             withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
@@ -71,6 +80,7 @@ export const appConfig: ApplicationConfig = {
         provideZonelessChangeDetection(),
         providePrimeNG({ theme: { preset: GestResuPreset, options: { darkModeSelector: '.app-dark' } } }),
         MessageService,
-        ConfirmationService
+        ConfirmationService,
+        { provide: LOCALE_ID, useValue: 'fr-FR' }
     ]
 };

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, viewChild, 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -41,6 +42,7 @@ function toIsoDate(value: Date | null): string | null {
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         ButtonModule,
         CardModule,
         CheckboxModule,
@@ -90,7 +92,7 @@ function toIsoDate(value: Date | null): string | null {
                         <th pSortableColumn="annee">Année<p-sortIcon field="annee" /></th>
                         <th pSortableColumn="libelle">Libellé<p-sortIcon field="libelle" /></th>
                         <th pSortableColumn="cloture">Clôturé<p-sortIcon field="cloture" /></th>
-                        <th style="width: 8rem"></th>
+                        <th style="width: 10rem"></th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-row>
@@ -99,6 +101,7 @@ function toIsoDate(value: Date | null): string | null {
                         <td>{{ row.libelle }}</td>
                         <td><p-tag [value]="row.cloture ? 'Oui' : 'Non'" [severity]="row.cloture ? 'success' : 'danger'" /></td>
                         <td>
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" [routerLink]="['/cycle', row.id]" />
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="remove(row)" />
                         </td>
