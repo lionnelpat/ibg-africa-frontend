@@ -10,4 +10,8 @@ export class BulletinApi {
     get(etudiantId: number): Observable<Bulletin> {
         return this.http.get<Bulletin>(`/api/etudiants/${etudiantId}/bulletin`);
     }
+
+    getPdf(etudiantId: number): Observable<Blob> {
+        return this.http.get(`/api/etudiants/${etudiantId}/bulletin/pdf`, { responseType: 'blob' });
+    }
 }

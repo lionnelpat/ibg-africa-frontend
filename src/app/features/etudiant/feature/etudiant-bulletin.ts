@@ -32,7 +32,13 @@ function borneLabel(bareme: BaremeMention): string {
                             {{ bulletin()?.centreNom }} ({{ bulletin()?.centreCode }}) — Matricule : {{ bulletin()?.matricule ?? 'n/a' }}
                         </div>
                     </div>
-                    <p-button label="Imprimer" icon="pi pi-print" (onClick)="print()" [disabled]="!bulletin()" />
+                    <p-button
+                        label="Télécharger le PDF"
+                        icon="pi pi-file-pdf"
+                        [loading]="telechargementEnCours()"
+                        (onClick)="telechargerPdf()"
+                        [disabled]="!bulletin()"
+                    />
                 </div>
             </p-card>
 
@@ -222,6 +228,7 @@ export class EtudiantBulletin {
 
     bulletin = signal<Bulletin | null>(null);
     baremes = signal<BaremeMention[]>([]);
+    telechargementEnCours = signal(false);
 
     legende = computed(() =>
         this.baremes()
@@ -239,7 +246,23 @@ export class EtudiantBulletin {
         this.baremeApi.query({ size: 100 }).subscribe((page) => this.baremes.set(page.content));
     }
 
-    print(): void {
-        window.print();
+    telechargerPdf(): void {
+        const b = this.bulletin();
+        if (!b) {
+            return;
+        }
+        this.telechargementEnCours.set(true);
+        this.api.getPdf(b.etudiantId).subscribe({
+            next: (blob) => {
+                this.telechargementEnCours.set(false);
+                const url = window.URL.createObjectURL(blob);
+                const lien = document.createElement('a');
+                lien.href = url;
+                lien.download = `bulletin-${b.matricule ?? b.etudiantId}.pdf`;
+                lien.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: () => this.telechargementEnCours.set(false)
+        });
     }
 }
