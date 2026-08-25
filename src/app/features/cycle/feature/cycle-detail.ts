@@ -124,6 +124,7 @@ interface EtudiantSuggestion extends Etudiant {
                             (completeMethod)="search($event)"
                             optionLabel="nomAffiche"
                             [dropdown]="false"
+                            appendTo="body"
                             fluid
                             placeholder="Rechercher par nom..."
                         >
