@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, viewChild, 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -166,6 +166,8 @@ export class EnseignantList implements OnInit {
     private readonly fb = inject(NonNullableFormBuilder);
     private readonly destroyRef = inject(DestroyRef);
     private readonly table = viewChild.required<Table>('table');
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
 
     rows = signal<Enseignant[]>([]);
     loading = signal(false);
@@ -199,6 +201,12 @@ export class EnseignantList implements OnInit {
         this.prenomControl.valueChanges.pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.reload());
         this.emailControl.valueChanges.pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.reload());
         this.actifControl.valueChanges.pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.reload());
+
+        const editId = this.route.snapshot.queryParamMap.get('edit');
+        if (editId) {
+            this.api.find(Number(editId)).subscribe((entity) => this.openEdit(entity));
+            this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+        }
     }
 
     onLazyLoad(event: TableLazyLoadEvent): void {

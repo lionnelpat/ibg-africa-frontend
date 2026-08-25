@@ -61,7 +61,7 @@ const MAX_PHOTO_SIZE = 3 * 1024 * 1024;
                         </div>
 
                         <div class="flex gap-2 mt-4">
-                            <p-button label="Modifier" icon="pi pi-pencil" text [routerLink]="['/enseignant']" />
+                            <p-button label="Modifier" icon="pi pi-pencil" text [routerLink]="['/enseignant']" [queryParams]="{ edit: id() }" />
                         </div>
                     </div>
                 </div>

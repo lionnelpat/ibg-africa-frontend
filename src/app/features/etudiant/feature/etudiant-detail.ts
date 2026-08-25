@@ -85,7 +85,7 @@ const SEXE_LABELS: Record<string, string> = {
                         </div>
 
                         <div class="flex gap-2 mt-4">
-                            <p-button label="Modifier" icon="pi pi-pencil" text [routerLink]="['/etudiant']" />
+                            <p-button label="Modifier" icon="pi pi-pencil" text [routerLink]="['/etudiant']" [queryParams]="{ edit: id() }" />
                             <p-button label="Télécharger le bulletin" icon="pi pi-file-pdf" text [loading]="telechargementEnCours()" (onClick)="telechargerPdf()" />
                         </div>
                     </div>
