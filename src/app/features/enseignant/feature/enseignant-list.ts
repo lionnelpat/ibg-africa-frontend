@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal, viewChild, 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -39,6 +40,7 @@ function toIsoDate(value: Date | null): string | null {
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         ButtonModule,
         CardModule,
         CheckboxModule,
@@ -95,12 +97,12 @@ function toIsoDate(value: Date | null): string | null {
                     </tr>
                 </ng-template>
                 <ng-template #body let-row>
-                    <tr>
+                    <tr [routerLink]="['/enseignant', row.id]" class="cursor-pointer">
                         <td>{{ row.nom }}</td>
                         <td>{{ row.prenom }}</td>
                         <td>{{ row.email }}</td>
                         <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
-                        <td>
+                        <td (click)="$event.stopPropagation()">
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="remove(row)" />
                         </td>
@@ -170,6 +172,7 @@ export class EnseignantList implements OnInit {
     totalRecords = signal(0);
     dialogVisible = signal(false);
     editingId: number | null = null;
+    private editingEntity: Enseignant | null = null;
     nomControl = this.fb.control<string>('');
     prenomControl = this.fb.control<string>('');
     emailControl = this.fb.control<string>('');
@@ -227,6 +230,7 @@ export class EnseignantList implements OnInit {
 
     openNew(): void {
         this.editingId = null;
+        this.editingEntity = null;
         this.form.reset({
             nom: '',
             prenom: '',
@@ -243,6 +247,7 @@ export class EnseignantList implements OnInit {
 
     openEdit(entity: Enseignant): void {
         this.editingId = entity.id;
+        this.editingEntity = entity;
         this.form.patchValue({
             nom: entity.nom,
             prenom: entity.prenom,
@@ -270,7 +275,11 @@ export class EnseignantList implements OnInit {
             email: value.email,
             telephone: value.telephone,
             commentaire: value.commentaire,
-            actif: value.actif
+            actif: value.actif,
+            // Le formulaire ne gère pas la photo (page détail dédiée) : on la
+            // reporte telle quelle pour ne pas l'effacer lors d'un PUT complet.
+            photo: this.editingEntity?.photo ?? null,
+            photoContentType: this.editingEntity?.photoContentType ?? null
         };
 
         const request$ = this.editingId ? this.api.update({ id: this.editingId, ...dto } as Enseignant) : this.api.create(dto as Omit<Enseignant, 'id'>);

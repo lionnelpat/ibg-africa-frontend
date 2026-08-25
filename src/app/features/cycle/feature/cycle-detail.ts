@@ -74,7 +74,9 @@ interface EtudiantSuggestion extends Etudiant {
                 <ng-template #header>
                     <div class="flex items-center justify-between px-4 pt-4">
                         <span class="font-semibold text-xl">Étudiants inscrits</span>
-                        <p-button label="Ajouter un étudiant" icon="pi pi-plus" size="small" (onClick)="openAdd()" />
+                        @if (!detail()?.cloture) {
+                            <p-button label="Ajouter un étudiant" icon="pi pi-plus" size="small" (onClick)="openAdd()" />
+                        }
                     </div>
                 </ng-template>
                 <p-table [value]="detail()?.etudiants ?? []" dataKey="id" [paginator]="true" [rows]="15">

@@ -8,4 +8,6 @@ export interface Enseignant {
     telephone: string | null;
     commentaire: string | null;
     actif: boolean;
+    photo: string | null;
+    photoContentType: string | null;
 }

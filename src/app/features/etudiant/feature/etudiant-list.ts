@@ -19,7 +19,7 @@ import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToolbarModule } from 'primeng/toolbar';
 import { NotificationService } from '@/app/core/notification/notification.service';
-import { Etudiant } from '../domain/etudiant.model';
+import { Etudiant, Sexe } from '../domain/etudiant.model';
 import { EtudiantApi } from '../data-access/etudiant.api';
 import { Pays } from '@/app/features/pays/domain/pays.model';
 import { PaysApi } from '@/app/features/pays/data-access/pays.api';
@@ -100,12 +100,12 @@ function toIsoDate(value: Date | null): string | null {
                     </tr>
                 </ng-template>
                 <ng-template #body let-row>
-                    <tr>
+                    <tr [routerLink]="['/etudiant', row.id]" class="cursor-pointer">
                         <td>{{ row.matricule }}</td>
                         <td>{{ row.nom }}</td>
                         <td>{{ row.prenom }}</td>
                         <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
-                        <td>
+                        <td (click)="$event.stopPropagation()">
                             <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" [routerLink]="['/etudiant', row.id, 'bulletin']" />
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
                             <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (onClick)="remove(row)" />
@@ -136,6 +136,10 @@ function toIsoDate(value: Date | null): string | null {
                         <p-datepicker inputId="dateNaissance" [formControl]="form.controls.dateNaissance" dateFormat="dd/mm/yy" [showIcon]="true" showButtonBar="true" fluid />
                     </div>
                     <div class="field col-span-12 md:col-span-6">
+                        <label for="sexe" class="block font-medium mb-2">Sexe </label>
+                        <p-select inputId="sexe" [formControl]="form.controls.sexe" [options]="sexeOptions" optionLabel="label" optionValue="value" [showClear]="true" placeholder="Non renseigné" fluid />
+                    </div>
+                    <div class="field col-span-12 md:col-span-6">
                         <label for="anneeEntree" class="block font-medium mb-2">Année d'entrée (1re inscription) </label>
                         <p-inputnumber inputId="anneeEntree" [formControl]="form.controls.anneeEntree" [useGrouping]="false" fluid />
                     </div>
@@ -147,7 +151,7 @@ function toIsoDate(value: Date | null): string | null {
                         <label for="telephone" class="block font-medium mb-2">Téléphone </label>
                         <input pInputText id="telephone" [formControl]="form.controls.telephone" fluid />
                     </div>
-                    <div class="field col-span-12">
+                    <div class="field col-span-12 md:col-span-6">
                         <label for="pays" class="block font-medium mb-2">Pays </label>
                         <p-select inputId="pays" [formControl]="form.controls.pays" [options]="paysOptions()" optionLabel="nom" dataKey="id" [showClear]="true" placeholder="Sélectionner" fluid />
                     </div>
@@ -202,6 +206,7 @@ export class EtudiantList implements OnInit {
     totalRecords = signal(0);
     dialogVisible = signal(false);
     editingId: number | null = null;
+    private editingEntity: Etudiant | null = null;
     matriculeControl = this.fb.control<string>('');
     nomControl = this.fb.control<string>('');
     prenomControl = this.fb.control<string>('');
@@ -212,12 +217,18 @@ export class EtudiantList implements OnInit {
         { label: 'Non', value: false }
     ];
 
+    sexeOptions: { label: string; value: Sexe }[] = [
+        { label: 'Homme', value: 'HOMME' },
+        { label: 'Femme', value: 'FEMME' }
+    ];
+
     form = this.fb.group({
         matricule: this.fb.control<string | null>(null, { validators: [Validators.maxLength(30)] }),
         nom: this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(80)] }),
         prenom: this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(80)] }),
         particularite: this.fb.control<string | null>(null, { validators: [Validators.maxLength(80)] }),
         dateNaissance: this.fb.control<Date | null>(null),
+        sexe: this.fb.control<Sexe | null>(null),
         email: this.fb.control<string | null>(null, { validators: [Validators.maxLength(150)] }),
         telephone: this.fb.control<string | null>(null, { validators: [Validators.maxLength(30)] }),
         anneeEntree: this.fb.control<number | null>(null, { validators: [Validators.min(1900), Validators.max(2200)] }),
@@ -265,12 +276,14 @@ export class EtudiantList implements OnInit {
 
     openNew(): void {
         this.editingId = null;
+        this.editingEntity = null;
         this.form.reset({
             matricule: null,
             nom: '',
             prenom: '',
             particularite: null,
             dateNaissance: null,
+            sexe: null,
             email: null,
             telephone: null,
             anneeEntree: null,
@@ -285,12 +298,14 @@ export class EtudiantList implements OnInit {
 
     openEdit(entity: Etudiant): void {
         this.editingId = entity.id;
+        this.editingEntity = entity;
         this.form.patchValue({
             matricule: entity.matricule,
             nom: entity.nom,
             prenom: entity.prenom,
             particularite: entity.particularite,
             dateNaissance: parseIsoDate(entity.dateNaissance),
+            sexe: entity.sexe,
             email: entity.email,
             telephone: entity.telephone,
             anneeEntree: entity.anneeEntree,
@@ -315,6 +330,7 @@ export class EtudiantList implements OnInit {
             prenom: value.prenom,
             particularite: value.particularite,
             dateNaissance: toIsoDate(value.dateNaissance),
+            sexe: value.sexe,
             email: value.email,
             telephone: value.telephone,
             anneeEntree: value.anneeEntree,
@@ -322,7 +338,11 @@ export class EtudiantList implements OnInit {
             anneeFinale: value.anneeFinale,
             commentaire: value.commentaire,
             actif: value.actif,
-            pays: value.pays
+            pays: value.pays,
+            // Le formulaire ne gère pas la photo (page détail dédiée) : on la
+            // reporte telle quelle pour ne pas l'effacer lors d'un PUT complet.
+            photo: this.editingEntity?.photo ?? null,
+            photoContentType: this.editingEntity?.photoContentType ?? null
         };
 
         const request$ = this.editingId ? this.api.update({ id: this.editingId, ...dto } as Etudiant) : this.api.create(dto as Omit<Etudiant, 'id'>);
