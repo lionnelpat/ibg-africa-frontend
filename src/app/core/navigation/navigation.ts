@@ -9,7 +9,7 @@ export const NAVIGATION: MenuItem[] = [
     {
         label: 'Général',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
             { label: 'Cycles', icon: 'pi pi-fw pi-calendar', routerLink: ['/cycle'] },
             { label: 'Enseignants', icon: 'pi pi-fw pi-user', routerLink: ['/enseignant'] },
             { label: 'Étudiants', icon: 'pi pi-fw pi-users', routerLink: ['/etudiant'] }

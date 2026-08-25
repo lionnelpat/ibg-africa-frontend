@@ -5,11 +5,17 @@ import { AppLayout } from './app/layout/component/app.layout';
 export const appRoutes: Routes = [
     {
         path: '',
+        pathMatch: 'full',
+        title: 'FORBIDEC — Formation biblique et théologique en Afrique | IBG Afrique',
+        loadComponent: () => import('./app/features/vitrine/vitrine').then((m) => m.Vitrine)
+    },
+    {
+        path: '',
         component: AppLayout,
         canActivate: [authGuard],
         children: [
             {
-                path: '',
+                path: 'dashboard',
                 title: 'Dashboard',
                 loadComponent: () => import('./app/features/dashboard/feature/dashboard').then((m) => m.Dashboard)
             },
