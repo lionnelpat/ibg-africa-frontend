@@ -147,13 +147,15 @@ function borneLabel(bareme: BaremeMention): string {
                 }
 
                 .masthead .logo {
-                    height: 56px;
-                    width: auto;
+                    height: 64px;
+                    width: 64px;
+                    object-fit: contain;
                     flex: none;
                 }
 
                 .masthead .logo-droit {
                     margin-left: auto;
+                    object-position: right center;
                 }
 
                 .entete {
@@ -166,7 +168,7 @@ function borneLabel(bareme: BaremeMention): string {
                 }
 
                 .identite {
-                    text-align: right;
+                    text-align: center;
                     font-weight: bold;
                     margin-bottom: 2rem;
                 }
