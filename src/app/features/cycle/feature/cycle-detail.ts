@@ -37,6 +37,16 @@ interface EtudiantSuggestion extends Etudiant {
                     </div>
                     <div class="flex items-center gap-3">
                         <p-tag [value]="detail()?.cloture ? 'Clôturé' : 'En cours'" [severity]="detail()?.cloture ? 'success' : 'info'" />
+                        <p-button
+                            label="Générer les bulletins"
+                            icon="pi pi-file-pdf"
+                            severity="secondary"
+                            outlined
+                            size="small"
+                            [loading]="generationBulletinsEnCours()"
+                            [disabled]="!detail()?.etudiants?.length"
+                            (onClick)="genererBulletins()"
+                        />
                         @if (!detail()?.cloture) {
                             <p-button label="Clôturer le cycle" icon="pi pi-lock" severity="danger" outlined size="small" (onClick)="cloturerCycle()" />
                         }
@@ -159,6 +169,7 @@ export class CycleDetail {
     detail = signal<CycleDetailModel | null>(null);
     suggestions = signal<EtudiantSuggestion[]>([]);
     addDialogVisible = signal(false);
+    generationBulletinsEnCours = signal(false);
 
     form = this.fb.group({
         etudiant: this.fb.control<EtudiantSuggestion | null>(null, { validators: [Validators.required] })
@@ -245,6 +256,38 @@ export class CycleDetail {
                 this.notification.success('Cycle clôturé.');
                 this.reload();
             });
+        });
+    }
+
+    genererBulletins(): void {
+        const cycleId = Number(this.id());
+        this.generationBulletinsEnCours.set(true);
+        this.api.getBulletinsZip(cycleId).subscribe({
+            next: (response) => {
+                this.generationBulletinsEnCours.set(false);
+                const blob = response.body;
+                if (!blob) {
+                    return;
+                }
+                const contentDisposition = response.headers.get('content-disposition') ?? '';
+                const match = /filename="([^"]+)"/.exec(contentDisposition);
+                const nomFichier = match ? match[1] : `bulletins_cycle_${cycleId}.zip`;
+
+                const url = window.URL.createObjectURL(blob);
+                const lien = document.createElement('a');
+                lien.href = url;
+                lien.download = nomFichier;
+                lien.click();
+                window.URL.revokeObjectURL(url);
+
+                const nombreErreurs = Number(response.headers.get('x-bulletins-erreurs') ?? '0');
+                if (nombreErreurs > 0) {
+                    this.notification.error(`${nombreErreurs} bulletin(s) n'ont pas pu être générés. Voir les journaux du serveur pour le détail.`);
+                } else {
+                    this.notification.success('Archive des bulletins générée.');
+                }
+            },
+            error: () => this.generationBulletinsEnCours.set(false)
         });
     }
 }

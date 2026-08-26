@@ -79,7 +79,11 @@ function borneLabel(bareme: BaremeMention): string {
 
         @if (bulletin(); as b) {
             <div class="bulletin-print">
-                <p class="entete">{{ b.centreEnteteDocument }}</p>
+                <div class="masthead">
+                    <img src="/logos/fes-logo.jpg" alt="FES" class="logo logo-gauche" />
+                    <p class="entete">{{ b.centreEnteteDocument }}</p>
+                    <img src="/logos/ibg-logo.png" alt="IBG" class="logo logo-droit" />
+                </div>
                 <p class="identite">{{ b.nom }}, {{ b.prenom }}</p>
                 <h2 class="titre">{{ b.centreCode }} - Feuille récapitulative des mentions</h2>
 
@@ -135,11 +139,29 @@ function borneLabel(bareme: BaremeMention): string {
                     color: #000;
                 }
 
+                .masthead {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+
+                .masthead .logo {
+                    height: 56px;
+                    width: auto;
+                    flex: none;
+                }
+
+                .masthead .logo-droit {
+                    margin-left: auto;
+                }
+
                 .entete {
+                    flex: 1;
                     text-align: center;
                     font-style: italic;
                     font-weight: bold;
-                    margin: 0 0 2rem 0;
+                    margin: 0;
                     white-space: pre-line;
                 }
 
