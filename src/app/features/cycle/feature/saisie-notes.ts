@@ -46,9 +46,9 @@ const STATUT_OPTIONS: { label: string; value: StatutNote }[] = [
             @if (!matiere()?.cycleCloture) {
                 <p-card header="Saisie en masse (Excel)">
                     <p class="text-muted-color mt-0 mb-4">
-                        Fichier .xlsx avec les informations de la matière et de l'enseignant en en-tête, puis un tableau à trois colonnes (matricule, nom
-                        prénom, note) avec une ligne par étudiant. Téléchargez le modèle pré-rempli avec la liste des inscrits, à faire compléter par
-                        l'enseignant.
+                        Fichier .xlsx avec les informations de la matière et de l'enseignant en en-tête, puis un tableau (matricule, nom prénom, note,
+                        année) avec une ligne par étudiant — l'année aide à distinguer deux étudiants homonymes. Téléchargez le modèle pré-rempli avec la
+                        liste des inscrits, à faire compléter par l'enseignant.
                     </p>
                     <div class="flex items-center gap-3">
                         <input #fileInput type="file" accept=".xlsx" hidden (change)="onFileSelected($event)" />
