@@ -21,6 +21,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { NotificationService } from '@/app/core/notification/notification.service';
 import { Etudiant, Sexe } from '../domain/etudiant.model';
 import { EtudiantApi } from '../data-access/etudiant.api';
+
+const NOMS_ANNEE = ['1re année', '2e année', '3e année', '4e année', '5e année'];
 import { Pays } from '@/app/features/pays/domain/pays.model';
 import { PaysApi } from '@/app/features/pays/data-access/pays.api';
 
@@ -95,6 +97,7 @@ function toIsoDate(value: Date | null): string | null {
                         <th pSortableColumn="matricule">Matricule<p-sortIcon field="matricule" /></th>
                         <th pSortableColumn="nom">Nom<p-sortIcon field="nom" /></th>
                         <th pSortableColumn="prenom">Prénom<p-sortIcon field="prenom" /></th>
+                        <th>Année</th>
                         <th pSortableColumn="actif">Actif<p-sortIcon field="actif" /></th>
                         <th style="width: 8rem"></th>
                     </tr>
@@ -104,6 +107,7 @@ function toIsoDate(value: Date | null): string | null {
                         <td>{{ row.matricule }}</td>
                         <td>{{ row.nom }}</td>
                         <td>{{ row.prenom }}</td>
+                        <td>{{ anneeLabel(cyclesCounts()[row.id]) }}</td>
                         <td><p-tag [value]="row.actif ? 'Oui' : 'Non'" [severity]="row.actif ? 'success' : 'danger'" /></td>
                         <td (click)="$event.stopPropagation()">
                             <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" [routerLink]="['/etudiant', row.id, 'bulletin']" />
@@ -114,7 +118,7 @@ function toIsoDate(value: Date | null): string | null {
                 </ng-template>
                 <ng-template #emptymessage>
                     <tr>
-                        <td colspan="5" class="text-center py-6">Aucune donnée.</td>
+                        <td colspan="6" class="text-center py-6">Aucune donnée.</td>
                     </tr>
                 </ng-template>
             </p-table>
@@ -206,6 +210,7 @@ export class EtudiantList implements OnInit {
     rows = signal<Etudiant[]>([]);
     loading = signal(false);
     totalRecords = signal(0);
+    cyclesCounts = signal<Record<number, number>>({});
     dialogVisible = signal(false);
     editingId: number | null = null;
     private editingEntity: Etudiant | null = null;
@@ -273,9 +278,32 @@ export class EtudiantList implements OnInit {
                     this.rows.set(result.content);
                     this.totalRecords.set(result.totalElements);
                     this.loading.set(false);
+                    this.chargerCyclesCounts(result.content);
                 },
                 error: () => this.loading.set(false)
             });
+    }
+
+    private chargerCyclesCounts(rows: Etudiant[]): void {
+        if (rows.length === 0) {
+            this.cyclesCounts.set({});
+            return;
+        }
+        this.api.nombreCycles(rows.map((r) => r.id)).subscribe((counts) => {
+            const map: Record<number, number> = {};
+            for (const c of counts) {
+                map[c.etudiantId] = c.total;
+            }
+            this.cyclesCounts.set(map);
+        });
+    }
+
+    anneeLabel(nombreCycles: number | undefined): string {
+        if (!nombreCycles || nombreCycles < 1) {
+            return '—';
+        }
+        const index = Math.min(nombreCycles, NOMS_ANNEE.length) - 1;
+        return NOMS_ANNEE[index];
     }
 
     reload(): void {
