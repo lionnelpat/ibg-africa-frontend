@@ -94,6 +94,7 @@ function toIsoDate(value: Date | null): string | null {
                     <tr>
                         <th pSortableColumn="annee">Année<p-sortIcon field="annee" /></th>
                         <th pSortableColumn="libelle">Libellé<p-sortIcon field="libelle" /></th>
+                        <th>Inscrits</th>
                         <th pSortableColumn="cloture">Clôturé<p-sortIcon field="cloture" /></th>
                         <th style="width: 10rem"></th>
                     </tr>
@@ -102,6 +103,7 @@ function toIsoDate(value: Date | null): string | null {
                     <tr [routerLink]="['/cycle', row.id]">
                         <td>{{ row.annee }}</td>
                         <td>{{ row.libelle }}</td>
+                        <td>{{ inscriptionsCounts()[row.id] ?? 0 }}</td>
                         <td><p-tag [value]="row.cloture ? 'Oui' : 'Non'" [severity]="row.cloture ? 'success' : 'danger'" /></td>
                         <td (click)="$event.stopPropagation()">
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="openEdit(row)" />
@@ -111,7 +113,7 @@ function toIsoDate(value: Date | null): string | null {
                 </ng-template>
                 <ng-template #emptymessage>
                     <tr>
-                        <td colspan="4" class="text-center py-6">Aucune donnée.</td>
+                        <td colspan="5" class="text-center py-6">Aucune donnée.</td>
                     </tr>
                 </ng-template>
             </p-table>
@@ -169,6 +171,7 @@ export class CycleList implements OnInit {
     rows = signal<Cycle[]>([]);
     loading = signal(false);
     totalRecords = signal(0);
+    inscriptionsCounts = signal<Record<number, number>>({});
     dialogVisible = signal(false);
     editingId: number | null = null;
     anneeControl = this.fb.control<number | null>(null);
@@ -211,9 +214,24 @@ export class CycleList implements OnInit {
                     this.rows.set(result.content);
                     this.totalRecords.set(result.totalElements);
                     this.loading.set(false);
+                    this.chargerInscriptionsCounts(result.content);
                 },
                 error: () => this.loading.set(false)
             });
+    }
+
+    private chargerInscriptionsCounts(rows: Cycle[]): void {
+        if (rows.length === 0) {
+            this.inscriptionsCounts.set({});
+            return;
+        }
+        this.api.nombreInscrits(rows.map((r) => r.id)).subscribe((counts) => {
+            const map: Record<number, number> = {};
+            for (const c of counts) {
+                map[c.cycleId] = c.total;
+            }
+            this.inscriptionsCounts.set(map);
+        });
     }
 
     reload(): void {

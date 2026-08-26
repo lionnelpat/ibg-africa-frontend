@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, input, signal } fro
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -126,7 +127,7 @@ interface EtudiantSuggestion extends Etudiant {
                             [dropdown]="false"
                             appendTo="body"
                             fluid
-                            placeholder="Rechercher par nom..."
+                            placeholder="Rechercher par nom ou matricule..."
                         >
                             <ng-template let-etudiant #item>
                                 <div>{{ etudiant.nom }} {{ etudiant.prenom }} <span class="text-muted-color">{{ etudiant.matricule }}</span></div>
@@ -189,14 +190,22 @@ export class CycleDetail {
     }
 
     search(event: AutoCompleteCompleteEvent): void {
-        this.etudiantApi.query({ 'nom.contains': event.query, size: 20 }).subscribe((page) =>
+        const query = event.query;
+        forkJoin({
+            parNom: this.etudiantApi.query({ 'nom.contains': query, size: 20 }),
+            parMatricule: this.etudiantApi.query({ 'matricule.contains': query, size: 20 })
+        }).subscribe(({ parNom, parMatricule }) => {
+            const parId = new Map<number, Etudiant>();
+            for (const etudiant of [...parNom.content, ...parMatricule.content]) {
+                parId.set(etudiant.id, etudiant);
+            }
             this.suggestions.set(
-                page.content.map((etudiant) => ({
+                Array.from(parId.values()).map((etudiant) => ({
                     ...etudiant,
                     nomAffiche: `${etudiant.nom} ${etudiant.prenom}${etudiant.matricule ? ' — ' + etudiant.matricule : ''}`
                 }))
-            )
-        );
+            );
+        });
     }
 
     confirmAdd(): void {
