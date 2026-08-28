@@ -9,6 +9,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
 import { errorInterceptor } from './app/core/http/error.interceptor';
+import { paysInterceptor } from './app/core/pays/pays.interceptor';
 
 registerLocaleData(localeFr);
 
@@ -75,7 +76,7 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(
             withFetch(),
             withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
-            withInterceptors([errorInterceptor])
+            withInterceptors([paysInterceptor, errorInterceptor])
         ),
         provideZonelessChangeDetection(),
         providePrimeNG({ theme: { preset: GestResuPreset, options: { darkModeSelector: '.app-dark' } } }),

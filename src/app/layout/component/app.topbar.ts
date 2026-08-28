@@ -4,7 +4,9 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
+import { Router } from '@angular/router';
 import { AccountService } from '@/app/core/auth/account.service';
+import { PaysContextService, VALEUR_TOUS } from '@/app/core/pays/pays-context.service';
 import { LayoutService } from '@/app/layout/service/layout.service';
 
 @Component({
@@ -39,6 +41,12 @@ import { LayoutService } from '@/app/layout/service/layout.service';
         </div>
 
         <div class="layout-topbar-actions">
+            @if (paysContext.codeActif(); as codeActif) {
+                <span class="layout-topbar-action" style="cursor: default">
+                    <i class="pi pi-flag"></i>
+                    {{ codeActif === valeurTous ? 'Tous les pays' : codeActif }}
+                </span>
+            }
             <button type="button" class="layout-topbar-action" [title]="accountService.account()?.login ?? ''" (click)="userMenu.toggle($event)">
                 <p-avatar icon="pi pi-user" shape="circle" />
             </button>
@@ -49,10 +57,20 @@ import { LayoutService } from '@/app/layout/service/layout.service';
 export class AppTopbar {
     layoutService = inject(LayoutService);
     accountService = inject(AccountService);
+    paysContext = inject(PaysContextService);
+    private readonly router = inject(Router);
+
+    readonly valeurTous = VALEUR_TOUS;
 
     userMenuItems: MenuItem[] = [
         { label: 'Profil', icon: 'pi pi-user', disabled: true },
+        { label: 'Changer de pays', icon: 'pi pi-flag', command: () => this.changerDePays() },
         { separator: true },
         { label: 'Déconnexion', icon: 'pi pi-sign-out', command: () => this.accountService.logout() }
     ];
+
+    private changerDePays(): void {
+        this.paysContext.clear();
+        this.router.navigateByUrl('/choix-pays');
+    }
 }

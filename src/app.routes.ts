@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './app/core/auth/auth.guard';
+import { paysGuard } from './app/core/pays/pays.guard';
 import { AppLayout } from './app/layout/component/app.layout';
 
 export const appRoutes: Routes = [
@@ -10,9 +11,15 @@ export const appRoutes: Routes = [
         loadComponent: () => import('./app/features/vitrine/vitrine').then((m) => m.Vitrine)
     },
     {
+        path: 'choix-pays',
+        title: 'Choix du pays',
+        canActivate: [authGuard],
+        loadComponent: () => import('./app/features/choix-pays/feature/choix-pays').then((m) => m.ChoixPays)
+    },
+    {
         path: '',
         component: AppLayout,
-        canActivate: [authGuard],
+        canActivate: [authGuard, paysGuard],
         children: [
             {
                 path: 'dashboard',
