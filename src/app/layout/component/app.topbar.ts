@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { Router } from '@angular/router';
 import { AccountService } from '@/app/core/auth/account.service';
@@ -12,7 +11,7 @@ import { LayoutService } from '@/app/layout/service/layout.service';
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, AvatarModule, MenuModule],
+    imports: [RouterModule, CommonModule, MenuModule],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -42,17 +41,72 @@ import { LayoutService } from '@/app/layout/service/layout.service';
 
         <div class="layout-topbar-actions">
             @if (paysContext.codeActif(); as codeActif) {
-                <span class="layout-topbar-action" style="cursor: default">
+                <button type="button" class="pays-badge" title="Changer de pays" (click)="changerDePays()">
                     <i class="pi pi-flag"></i>
-                    {{ codeActif === valeurTous ? 'Tous les pays' : codeActif }}
-                </span>
+                    <span>{{ codeActif === valeurTous ? 'Tous les pays' : codeActif }}</span>
+                </button>
             }
-            <button type="button" class="layout-topbar-action" [title]="accountService.account()?.login ?? ''" (click)="userMenu.toggle($event)">
-                <p-avatar icon="pi pi-user" shape="circle" />
+            <button type="button" class="user-avatar-btn" [title]="accountService.account()?.login ?? ''" (click)="userMenu.toggle($event)">
+                <span class="user-avatar">{{ initiales() }}</span>
             </button>
             <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
         </div>
-    </div>`
+    </div>`,
+    styles: [
+        `
+            .pays-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                height: 2.25rem;
+                padding: 0 0.85rem;
+                border-radius: 999px;
+                border: 1.5px solid var(--primary-color);
+                background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+                color: var(--primary-color);
+                font-size: 0.85rem;
+                font-weight: 600;
+                white-space: nowrap;
+                cursor: pointer;
+                transition: background-color 0.15s ease;
+            }
+
+            .pays-badge:hover {
+                background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+            }
+
+            .pays-badge i {
+                font-size: 0.85rem;
+            }
+
+            .user-avatar-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            .user-avatar {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.25rem;
+                height: 2.25rem;
+                border-radius: 50%;
+                background: var(--primary-color);
+                color: var(--primary-contrast-color);
+                font-size: 0.85rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+            }
+        `
+    ]
 })
 export class AppTopbar {
     layoutService = inject(LayoutService);
@@ -69,7 +123,12 @@ export class AppTopbar {
         { label: 'Déconnexion', icon: 'pi pi-sign-out', command: () => this.accountService.logout() }
     ];
 
-    private changerDePays(): void {
+    initiales(): string {
+        const login = this.accountService.account()?.login ?? '';
+        return login.slice(0, 2).toUpperCase();
+    }
+
+    changerDePays(): void {
         this.paysContext.clear();
         this.router.navigateByUrl('/choix-pays');
     }
