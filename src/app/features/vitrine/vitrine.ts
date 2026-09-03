@@ -36,7 +36,7 @@ const CENTRES: Centre[] = [
     {
         pays: 'Sénégal',
         ville: 'Dakar',
-        photo: 'https://placehold.co/900x1100/8f3d22/fbf4ea?font=playfair-display&text=Centre%20de%20Dakar',
+        photo: '/vitrine/centre-dakar.jpg',
         depuis: 'Depuis 1996',
         effectif: '547 étudiants formés',
         description:
@@ -138,8 +138,8 @@ const TEMOIGNAGES: Temoignage[] = [
                     </div>
                     <div class="v-mission-photo">
                         <img
-                            src="https://placehold.co/900x1100/d9a441/211b17?text=Photo%3A+session+de+cours"
-                            alt="Session de cours FORBIDEC"
+                            src="/vitrine/session-dakar.jpg"
+                            alt="Session de cours au centre de Dakar"
                             loading="lazy"
                         />
                         <div class="v-mission-caption">
@@ -345,7 +345,7 @@ const TEMOIGNAGES: Temoignage[] = [
             .v-hero-bg {
                 position: absolute;
                 inset: 0;
-                background: url('https://placehold.co/1800x1200/8f3d22/6e3018?text=Photo') center/cover no-repeat;
+                background: url('/vitrine/hero-dakar.jpg') center/cover no-repeat;
                 z-index: -2;
             }
 
