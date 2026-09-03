@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # ---- Runtime stage ---------------------------------------------------------
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:1.30-alpine AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/dist/sakai-ng/browser /usr/share/nginx/html

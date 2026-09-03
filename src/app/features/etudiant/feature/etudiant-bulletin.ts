@@ -80,7 +80,9 @@ function borneLabel(bareme: BaremeMention): string {
         @if (bulletin(); as b) {
             <div class="bulletin-print">
                 <div class="masthead">
-                    <img src="/logos/fes-logo.jpg" alt="FES" class="logo logo-gauche" />
+                    @if (b.centreCode === CODE_CENTRE_AVEC_FES) {
+                        <img src="/logos/fes-logo.jpg" alt="FES" class="logo logo-gauche" />
+                    }
                     <p class="entete">{{ b.centreEnteteDocument }}</p>
                     <img src="/logos/ibg-logo.png" alt="IBG" class="logo logo-droit" />
                 </div>
@@ -247,6 +249,8 @@ function borneLabel(bareme: BaremeMention): string {
 export class EtudiantBulletin {
     private readonly api = inject(BulletinApi);
     private readonly baremeApi = inject(BaremeMentionApi);
+
+    readonly CODE_CENTRE_AVEC_FES = 'CDDakar';
 
     id = input.required<string>();
 

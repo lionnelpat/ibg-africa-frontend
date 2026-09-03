@@ -1,11 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { catchError, firstValueFrom, of, tap } from 'rxjs';
+import { PaysContextService } from '@/app/core/pays/pays-context.service';
 import { Account } from './account.model';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
     private readonly http = inject(HttpClient);
+    private readonly paysContext = inject(PaysContextService);
 
     private readonly _account = signal<Account | null>(null);
     private readonly _loaded = signal(false);
@@ -37,6 +39,7 @@ export class AccountService {
     async logout(): Promise<void> {
         const response = await firstValueFrom(this.http.post<{ logoutUrl: string }>('/api/logout', {}));
         this._account.set(null);
+        this.paysContext.clear();
         window.location.href = response.logoutUrl;
     }
 }
