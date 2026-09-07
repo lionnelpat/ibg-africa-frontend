@@ -80,8 +80,8 @@ function borneLabel(bareme: BaremeMention): string {
         @if (bulletin(); as b) {
             <div class="bulletin-print">
                 <div class="masthead">
-                    @if (b.centreCode === CODE_CENTRE_AVEC_FES) {
-                        <img src="/logos/fes-logo.jpg" alt="FES" class="logo logo-gauche" />
+                    @if (LOGO_GAUCHE_PAR_CENTRE[b.centreCode ?? '']; as logoGauche) {
+                        <img [src]="logoGauche" alt="Partenaire local" class="logo logo-gauche" />
                     }
                     <p class="entete">{{ b.centreEnteteDocument }}</p>
                     <img src="/logos/ibg-logo.png" alt="IBG" class="logo logo-droit" />
@@ -250,7 +250,12 @@ export class EtudiantBulletin {
     private readonly api = inject(BulletinApi);
     private readonly baremeApi = inject(BaremeMentionApi);
 
-    readonly CODE_CENTRE_AVEC_FES = 'CDDakar';
+    // Logo du partenaire local a gauche, selon le centre (FES pour Dakar,
+    // CEFOI pour Madagascar) ; rien pour un centre sans partenaire local.
+    readonly LOGO_GAUCHE_PAR_CENTRE: Record<string, string> = {
+        CDDakar: '/logos/fes-logo.jpg',
+        CDMADA: '/logos/cefoi-logo.jpg'
+    };
 
     id = input.required<string>();
 
